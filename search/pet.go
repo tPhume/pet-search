@@ -44,8 +44,8 @@ func (pc *PetClient) AddPet(ctx context.Context, pm PetModel) (*esapi.Response, 
 	}
 
 	req := esapi.IndexRequest{
-		Index:      id.String(),
-		DocumentID: pm.Name,
+		Index:      "pets",
+		DocumentID: id.String(),
 		Body:       bytes.NewReader(bodyBytes),
 		Refresh:    "true",
 	}
