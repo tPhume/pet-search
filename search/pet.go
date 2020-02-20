@@ -12,12 +12,26 @@ import (
 )
 
 type PetModel struct {
+	Id   string `json:"id"`
 	Name string `json:"name"`
 	Desc string `json:"desc"`
 }
 
-func NewPetModel(name string, desc string) PetModel {
+func NewPetModel(id string, name string, desc string) PetModel {
 	return PetModel{
+		Id:   id,
+		Name: name,
+		Desc: desc,
+	}
+}
+
+type PetModelNoId struct {
+	Name string `json:"name"`
+	Desc string `json:"desc"`
+}
+
+func NewPetModelNoId(name string, desc string) PetModelNoId {
+	return PetModelNoId{
 		Name: name,
 		Desc: desc,
 	}
@@ -50,7 +64,7 @@ func (pc *PetClient) CheckStatus() (*esapi.Response, error) {
 	return res, nil
 }
 
-func (pc *PetClient) AddPet(ctx context.Context, pm PetModel) (*esapi.Response, error) {
+func (pc *PetClient) AddPet(ctx context.Context, pm PetModelNoId) (*esapi.Response, error) {
 	id := uuid.New()
 	bodyBytes, err := json.Marshal(pm)
 	if err != nil {
@@ -88,7 +102,7 @@ func (pc *PetClient) SearchPetByID(ctx context.Context, id string) (*esapi.Respo
 	return res, nil
 }
 
-func (pc *PetClient) UpdatePetByID(ctx context.Context, id string, pm PetModel) (*esapi.Response, error) {
+func (pc *PetClient) UpdatePetByID(ctx context.Context, pm PetModel) (*esapi.Response, error) {
 	bodyBytes, err := json.Marshal(pm)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("could not index documents: %s", err))
@@ -96,7 +110,7 @@ func (pc *PetClient) UpdatePetByID(ctx context.Context, id string, pm PetModel) 
 
 	req := esapi.UpdateRequest{
 		Index:      "pets",
-		DocumentID: id,
+		DocumentID: pm.Id,
 		Body:       bytes.NewReader(bodyBytes),
 		Pretty:     true,
 	}

@@ -12,7 +12,7 @@ func main() {
 	es, err := elasticsearch.NewDefaultClient()
 	failOnError(err, "could not connect to elasticsearch")
 
-	sushi := search.NewPetModel("sushi", "He is a good boy.")
+	sushi := search.NewPetModelNoId("sushi", "He is a good boy.")
 	petClient := search.NewPetClient(es)
 
 	// add pet
