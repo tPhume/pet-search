@@ -29,6 +29,7 @@ type Pet interface {
 	SearchPetByID(context.Context, string) (*esapi.Response, error)
 	UpdatePetByID(context.Context, string) (*esapi.Response, error)
 	DeletePetByID(context.Context, string) (*esapi.Response, error)
+	ListPetByName(context.Context, string) (*esapi.Response, error)
 }
 
 // Concrete implementation
@@ -117,6 +118,21 @@ func (pc *PetClient) DeletePetByID(ctx context.Context, id string) (*esapi.Respo
 	res, err := req.Do(ctx, pc.es)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("could not delete document: %s", err))
+	}
+
+	return res, nil
+}
+
+func (pc *PetClient) ListPetByName(ctx context.Context, name string) (*esapi.Response, error) {
+	res, err := pc.es.Search(
+		pc.es.Search.WithIndex("pets"),
+		pc.es.Search.WithQuery(fmt.Sprintf("name:%s", name)),
+		pc.es.Search.WithContext(ctx),
+		pc.es.Search.WithPretty(),
+	)
+
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("could not get document: %s", err))
 	}
 
 	return res, nil
