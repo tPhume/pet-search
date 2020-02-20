@@ -20,6 +20,7 @@ type Pet interface {
 	CheckStatus() (*esapi.Response, error)
 	AddPet(context.Context, PetModel) (*esapi.Response, error)
 	SearchPetByID(context.Context, string) (*esapi.Response, error)
+	UpdatePetByID(context.Context, string) (*esapi.Response, error)
 	DeletePetByID(context.Context, string) (*esapi.Response, error)
 }
 
@@ -69,6 +70,27 @@ func (pc *PetClient) SearchPetByID(ctx context.Context, id string) (*esapi.Respo
 
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("could not get document: %s", err))
+	}
+
+	return res, nil
+}
+
+func (pc *PetClient) UpdatePetByID(ctx context.Context, id string, pm PetModel) (*esapi.Response, error) {
+	bodyBytes, err := json.Marshal(pm)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("could not index documents: %s", err))
+	}
+
+	req := esapi.UpdateRequest{
+		Index:      "pets",
+		DocumentID: id,
+		Body:       bytes.NewReader(bodyBytes),
+		Pretty:     true,
+	}
+
+	res, err := req.Do(ctx, pc.es)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("could not update document: %s", err))
 	}
 
 	return res, nil
