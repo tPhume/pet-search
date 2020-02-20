@@ -16,6 +16,13 @@ type PetModel struct {
 	Desc string `json:"desc"`
 }
 
+func NewPetModel(name string, desc string) PetModel {
+	return PetModel{
+		Name: name,
+		Desc: desc,
+	}
+}
+
 type Pet interface {
 	CheckStatus() (*esapi.Response, error)
 	AddPet(context.Context, PetModel) (*esapi.Response, error)
@@ -27,6 +34,10 @@ type Pet interface {
 // Concrete implementation
 type PetClient struct {
 	es *elasticsearch.Client
+}
+
+func NewPetClient(es *elasticsearch.Client) *PetClient {
+	return &PetClient{es: es}
 }
 
 func (pc *PetClient) CheckStatus() (*esapi.Response, error) {
