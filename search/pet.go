@@ -62,6 +62,7 @@ func (pc *PetClient) AddPet(ctx context.Context, pm PetModel) (*esapi.Response, 
 		DocumentID: id.String(),
 		Body:       bytes.NewReader(bodyBytes),
 		Refresh:    "true",
+		Pretty:     true,
 	}
 
 	res, err := req.Do(ctx, pc.es)
