@@ -20,6 +20,7 @@ type Pet interface {
 	CheckStatus() (*esapi.Response, error)
 	AddPet(context.Context, PetModel) (*esapi.Response, error)
 	SearchPetByID(context.Context, string) (*esapi.Response, error)
+	DeletePetByID(context.Context, string) (*esapi.Response, error)
 }
 
 // Concrete implementation
@@ -68,6 +69,21 @@ func (pc *PetClient) SearchPetByID(ctx context.Context, id string) (*esapi.Respo
 
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("could not get document: %s", err))
+	}
+
+	return res, nil
+}
+
+func (pc *PetClient) DeletePetByID(ctx context.Context, id string) (*esapi.Response, error) {
+	req := esapi.DeleteRequest{
+		Index:      "pets",
+		DocumentID: id,
+		Pretty:     true,
+	}
+
+	res, err := req.Do(ctx, pc.es)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("could not delete document: %s", err))
 	}
 
 	return res, nil
