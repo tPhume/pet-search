@@ -75,7 +75,7 @@ func (pc *PetClient) AddPet(ctx context.Context, pm PetModel) (*esapi.Response, 
 func (pc *PetClient) SearchPetByID(ctx context.Context, id string) (*esapi.Response, error) {
 	res, err := pc.es.Search(
 		pc.es.Search.WithIndex("pets"),
-		pc.es.Search.WithQuery(fmt.Sprintf("_id")),
+		pc.es.Search.WithQuery(fmt.Sprintf("_id:%s", id)),
 		pc.es.Search.WithContext(ctx),
 		pc.es.Search.WithPretty(),
 	)
