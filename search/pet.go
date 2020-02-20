@@ -19,6 +19,7 @@ type PetModel struct {
 type Pet interface {
 	CheckStatus() (*esapi.Response, error)
 	AddPet(context.Context, PetModel) (*esapi.Response, error)
+	SearchPetByID(context.Context, string) (*esapi.Response, error)
 }
 
 // Concrete implementation
@@ -52,6 +53,21 @@ func (pc *PetClient) AddPet(ctx context.Context, pm PetModel) (*esapi.Response, 
 	res, err := req.Do(ctx, pc.es)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("could not index document: %s", err))
+	}
+
+	return res, nil
+}
+
+func (pc *PetClient) SearchPetByID(ctx context.Context, id string) (*esapi.Response, error) {
+	res, err := pc.es.Search(
+		pc.es.Search.WithIndex("pets"),
+		pc.es.Search.WithQuery(fmt.Sprintf("_id")),
+		pc.es.Search.WithContext(ctx),
+		pc.es.Search.WithPretty(),
+	)
+
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("could not get document: %s", err))
 	}
 
 	return res, nil
