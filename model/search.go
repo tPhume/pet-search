@@ -1,6 +1,29 @@
 package model
 
+import (
+	"encoding/json"
+	"io"
+	"io/ioutil"
+)
+
 // Contains complete response struct derived from Elasticsearch JSON response
+// and helper functions to easily work with them
+
+func BodyToIndexResponse(body io.ReadCloser) (*IndexResponse, error) {
+	defer body.Close()
+	bytes, err := ioutil.ReadAll(body)
+	if err != nil {
+		return nil, err
+	}
+
+	var res IndexResponse
+	if err = json.Unmarshal(bytes, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
 type IndexResponse struct {
 	Index         string `json:"_index"`
 	Type          string `json:"_type"`
@@ -17,7 +40,7 @@ type IndexResponse struct {
 	PrimaryTerm int `json:"_primary_term"`
 }
 
-type QueryResponse struct {
+type QueryByIDResponse struct {
 	Took     int  `json:"took"`
 	TimedOut bool `json:"timed_out"`
 	Shards   struct {
@@ -43,4 +66,19 @@ type QueryResponse struct {
 			} `json:"_source"`
 		} `json:"hits"`
 	} `json:"hits"`
+}
+
+func BodyToQueryByIDResponse(body io.ReadCloser) (*QueryByIDResponse, error) {
+	defer body.Close()
+	bytes, err := ioutil.ReadAll(body)
+	if err != nil {
+		return nil, err
+	}
+
+	var res QueryByIDResponse
+	if err = json.Unmarshal(bytes, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
