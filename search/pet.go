@@ -151,7 +151,7 @@ func (pc *PetClient) ListPetByName(ctx context.Context, name string) ([]model.Pe
 
 	pmList := make([]model.PetModel, len(queryRes.Hits.Hits))
 	for i, hit := range queryRes.Hits.Hits {
-		pmList[i] = model.NewPetInstanceWithId(hit.Index, hit.Source.Name, hit.Source.Desc)
+		pmList[i] = model.NewPetInstanceWithId(hit.ID, hit.Source.Name, hit.Source.Desc)
 	}
 
 	return pmList, nil
@@ -175,7 +175,7 @@ func (pc *PetClient) ListAllPet(ctx context.Context) ([]model.PetModel, error) {
 
 	pmList := make([]model.PetModel, len(queryRes.Hits.Hits))
 	for i, hit := range queryRes.Hits.Hits {
-		pmList[i] = model.NewPetInstanceWithId(hit.Index, hit.Source.Name, hit.Source.Desc)
+		pmList[i] = model.NewPetInstanceWithId(hit.ID, hit.Source.Name, hit.Source.Desc)
 	}
 
 	return pmList, nil
