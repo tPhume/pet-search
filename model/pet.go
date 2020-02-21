@@ -3,8 +3,8 @@ package model
 import "errors"
 
 var (
-	EMPTY_ID = errors.New("id is empty")
-	EMPTY_NAME = errors.New("name is empty")
+	errorEmptyId = errors.New("id is empty")
+	errorEmptyName = errors.New("name is empty")
 
 )
 
@@ -22,7 +22,7 @@ type PetInstance struct {
 
 func (p *PetInstance) GetId() (string, error) {
 	if p.Id == "" {
-		return "", EMPTY_ID
+		return "", errorEmptyId
 	}
 
 	return p.Id, nil
@@ -30,7 +30,7 @@ func (p *PetInstance) GetId() (string, error) {
 
 func (p *PetInstance) GetName() (string, error) {
 	if p.Name == "" {
-		return "", EMPTY_NAME
+		return "", errorEmptyName
 	}
 
 	return p.Name, nil
