@@ -8,33 +8,32 @@ var (
 )
 
 type PetModel interface {
-	GetId() (string, error)
-	GetName() (string, error)
-	GetDesc() (string, error)
+	GetId() string
+	GetName() string
+	GetDesc() string
 }
 
 type PetInstance struct {
-	Id   string
-	Name string
-	Desc string
+	id   string
+	name string
+	desc string
 }
 
-func (p *PetInstance) GetId() (string, error) {
-	if p.Id == "" {
-		return "", errorEmptyId
+func NewPetInstance(name string, desc string) *PetInstance {
+	return &PetInstance{
+		name: name,
+		desc: desc,
 	}
-
-	return p.Id, nil
 }
 
-func (p *PetInstance) GetName() (string, error) {
-	if p.Name == "" {
-		return "", errorEmptyName
-	}
-
-	return p.Name, nil
+func (p *PetInstance) GetId() string {
+	return p.id
 }
 
-func (p *PetInstance) GetDesc() (string, error) {
-	return p.Desc, nil
+func (p *PetInstance) GetName() string {
+	return p.name
+}
+
+func (p *PetInstance) GetDesc() string {
+	return p.desc
 }
