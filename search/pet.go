@@ -134,7 +134,7 @@ func (pc *PetClient) DeletePetByID(ctx context.Context, id string) (*esapi.Respo
 
 func (pc *PetClient) ListPetByName(ctx context.Context, name string) ([]model.PetModel, error) {
 	res, err := pc.es.Search(
-		pc.es.Search.WithIndex("pets"),
+		pc.es.Search.WithIndex("pets/"),
 		pc.es.Search.WithQuery(fmt.Sprintf("name:%s", name)),
 		pc.es.Search.WithContext(ctx),
 		pc.es.Search.WithPretty(),
@@ -159,7 +159,7 @@ func (pc *PetClient) ListPetByName(ctx context.Context, name string) ([]model.Pe
 
 func (pc *PetClient) ListAllPet(ctx context.Context) ([]model.PetModel, error) {
 	res, err := pc.es.Search(
-		pc.es.Search.WithIndex("pets"),
+		pc.es.Search.WithIndex("pets/"),
 		pc.es.Search.WithContext(ctx),
 		pc.es.Search.WithPretty(),
 	)
