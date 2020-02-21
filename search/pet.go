@@ -9,41 +9,21 @@ import (
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/google/uuid"
+	"github.com/tPhume/pet-search/model"
 )
-
-type PetModel struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
-	Desc string `json:"desc"`
-}
-
-func NewPetModel(id string, name string, desc string) *PetModel {
-	return &PetModel{
-		Id:   id,
-		Name: name,
-		Desc: desc,
-	}
-}
-
-type PetModelNoId struct {
-	Name string `json:"name"`
-	Desc string `json:"desc"`
-}
-
-func NewPetModelNoId(name string, desc string) *PetModelNoId {
-	return &PetModelNoId{
-		Name: name,
-		Desc: desc,
-	}
-}
 
 type Pet interface {
 	CheckStatus() (*esapi.Response, error)
-	AddPet(context.Context, PetModel) (*esapi.Response, error)
+	AddPet(context.Context, model.PetModel) (*esapi.Response, error)
 	SearchPetByID(context.Context, string) (*esapi.Response, error)
-	UpdatePetByID(context.Context, string) (*esapi.Response, error)
+	UpdatePetByID(context.Context, model.PetModel) (*esapi.Response, error)
 	DeletePetByID(context.Context, string) (*esapi.Response, error)
 	ListPetByName(context.Context, string) (*esapi.Response, error)
+}
+
+type petRequest struct {
+	name string
+	desc string
 }
 
 // Concrete implementation
@@ -64,9 +44,13 @@ func (pc *PetClient) CheckStatus() (*esapi.Response, error) {
 	return res, nil
 }
 
-func (pc *PetClient) AddPet(ctx context.Context, pm *PetModelNoId) (*esapi.Response, error) {
+func (pc *PetClient) AddPet(ctx context.Context, pm model.PetModel) (*esapi.Response, error) {
 	id := uuid.New()
-	bodyBytes, err := json.Marshal(pm)
+
+	bodyBytes, err := json.Marshal(petRequest{
+		name: pm.GetName(),
+		desc: pm.GetDesc(),
+	})
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("could not marshal struct: %s", err))
 	}
@@ -102,15 +86,18 @@ func (pc *PetClient) SearchPetByID(ctx context.Context, id string) (*esapi.Respo
 	return res, nil
 }
 
-func (pc *PetClient) UpdatePetByID(ctx context.Context, pm *PetModel) (*esapi.Response, error) {
-	bodyBytes, err := json.Marshal(pm)
+func (pc *PetClient) UpdatePetByID(ctx context.Context, pm model.PetModel) (*esapi.Response, error) {
+	bodyBytes, err := json.Marshal(petRequest{
+		name: pm.GetName(),
+		desc: pm.GetDesc(),
+	})
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("could not index documents: %s", err))
 	}
 
 	req := esapi.UpdateRequest{
 		Index:      "pets",
-		DocumentID: pm.Id,
+		DocumentID: pm.GetId(),
 		Body:       bytes.NewReader(bodyBytes),
 		Pretty:     true,
 	}
