@@ -32,6 +32,14 @@ func NewPetInstance(name string, desc string) *PetInstance {
 	}
 }
 
+func NewPetInstanceWithId(id string, name string, desc string) *PetInstance {
+	return &PetInstance{
+		id:   id,
+		name: name,
+		desc: desc,
+	}
+}
+
 func (p *PetInstance) SetId(id string) {
 	p.id = id
 }
