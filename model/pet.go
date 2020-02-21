@@ -3,9 +3,8 @@ package model
 import "errors"
 
 var (
-	errorEmptyId = errors.New("id is empty")
+	errorEmptyId   = errors.New("id is empty")
 	errorEmptyName = errors.New("name is empty")
-
 )
 
 type PetModel interface {
@@ -34,4 +33,8 @@ func (p *PetInstance) GetName() (string, error) {
 	}
 
 	return p.Name, nil
+}
+
+func (p *PetInstance) GetDesc() (string, error) {
+	return p.Desc, nil
 }
