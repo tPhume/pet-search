@@ -1,6 +1,29 @@
 package model
 
+import (
+	"encoding/json"
+	"io"
+	"io/ioutil"
+)
+
 // Contains complete response struct derived from Elasticsearch JSON response
+// and helper functions to easily work with them
+
+func BodyToIndexResponse(body io.ReadCloser) (*IndexResponse, error) {
+	defer body.Close()
+	bytes, err := ioutil.ReadAll(body)
+	if err != nil {
+		return nil, err
+	}
+
+	var res IndexResponse
+	if err = json.Unmarshal(bytes, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
 type IndexResponse struct {
 	Index         string `json:"_index"`
 	Type          string `json:"_type"`
