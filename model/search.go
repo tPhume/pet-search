@@ -40,7 +40,7 @@ type IndexResponse struct {
 	PrimaryTerm int `json:"_primary_term"`
 }
 
-type QueryByIDResponse struct {
+type QueryByNameResponse struct {
 	Took     int  `json:"took"`
 	TimedOut bool `json:"timed_out"`
 	Shards   struct {
@@ -68,14 +68,14 @@ type QueryByIDResponse struct {
 	} `json:"hits"`
 }
 
-func BodyToQueryByIDResponse(body io.ReadCloser) (*QueryByIDResponse, error) {
+func BodyToQueryByNameResponse(body io.ReadCloser) (*QueryByNameResponse, error) {
 	defer body.Close()
 	bytes, err := ioutil.ReadAll(body)
 	if err != nil {
 		return nil, err
 	}
 
-	var res QueryByIDResponse
+	var res QueryByNameResponse
 	if err = json.Unmarshal(bytes, &res); err != nil {
 		return nil, err
 	}
