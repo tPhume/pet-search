@@ -67,3 +67,18 @@ type QueryResponse struct {
 		} `json:"hits"`
 	} `json:"hits"`
 }
+
+func BodyToQueryResponse(body io.ReadCloser) (*QueryResponse, error) {
+	defer body.Close()
+	bytes, err := ioutil.ReadAll(body)
+	if err != nil {
+		return nil, err
+	}
+
+	var res QueryResponse
+	if err = json.Unmarshal(bytes, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
