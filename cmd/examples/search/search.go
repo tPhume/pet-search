@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/tPhume/pet-search/model"
 	"github.com/tPhume/pet-search/search"
 	"io/ioutil"
 	"log"
@@ -12,7 +13,7 @@ func main() {
 	es, err := elasticsearch.NewDefaultClient()
 	failOnError(err, "could not connect to elasticsearch")
 
-	sushi := search.NewPetModelNoId("sushi", "He is a good boy.")
+	sushi := model.NewPetInstance("sushi", "He is a good boy.")
 	petClient := search.NewPetClient(es)
 
 	// add pet

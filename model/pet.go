@@ -19,6 +19,13 @@ type PetInstance struct {
 	desc string
 }
 
+func NewPetInstance(name string, desc string) *PetInstance {
+	return &PetInstance{
+		name: name,
+		desc: desc,
+	}
+}
+
 func (p *PetInstance) GetId() string {
 	return p.id
 }
