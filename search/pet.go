@@ -14,11 +14,11 @@ import (
 
 type Pet interface {
 	CheckStatus() (*esapi.Response, error)
-	AddPet(context.Context, model.PetModel) (*esapi.Response, error)
+	AddPet(context.Context, model.PetModel) (model.PetModel, error)
 	SearchPetByID(context.Context, string) (*esapi.Response, error)
 	UpdatePetByID(context.Context, model.PetModel) (*esapi.Response, error)
 	DeletePetByID(context.Context, string) (*esapi.Response, error)
-	ListPetByName(context.Context, string) (*esapi.Response, error)
+	ListPetByName(context.Context, string) ([]model.PetModel, error)
 }
 
 type petRequest struct {
@@ -44,7 +44,7 @@ func (pc *PetClient) CheckStatus() (*esapi.Response, error) {
 	return res, nil
 }
 
-func (pc *PetClient) AddPet(ctx context.Context, pm model.PetModel) (*esapi.Response, error) {
+func (pc *PetClient) AddPet(ctx context.Context, pm model.PetModel) (model.PetModel, error) {
 	id := uuid.New()
 
 	bodyBytes, err := json.Marshal(petRequest{
@@ -68,7 +68,13 @@ func (pc *PetClient) AddPet(ctx context.Context, pm model.PetModel) (*esapi.Resp
 		return nil, errors.New(fmt.Sprintf("could not index document: %s", err))
 	}
 
-	return res, nil
+	indexRes, err := model.BodyToIndexResponse(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	pm.SetId(indexRes.Index)
+	return pm, nil
 }
 
 func (pc *PetClient) SearchPetByID(ctx context.Context, id string) (*esapi.Response, error) {
