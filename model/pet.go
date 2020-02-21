@@ -3,7 +3,9 @@ package model
 import "errors"
 
 var (
-	EMPTY_ID = errors.New("string is empty")
+	EMPTY_ID = errors.New("id is empty")
+	EMPTY_NAME = errors.New("name is empty")
+
 )
 
 type PetModel interface {
@@ -24,4 +26,12 @@ func (p *PetInstance) GetId() (string, error) {
 	}
 
 	return p.Id, nil
+}
+
+func (p *PetInstance) GetName() (string, error) {
+	if p.Name == "" {
+		return "", EMPTY_NAME
+	}
+
+	return p.Name, nil
 }
