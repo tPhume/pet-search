@@ -131,7 +131,7 @@ func (pc *PetClient) DeletePetByID(ctx context.Context, id string) (*esapi.Respo
 	return res, nil
 }
 
-func (pc *PetClient) ListPetByName(ctx context.Context, name string) (*esapi.Response, error) {
+func (pc *PetClient) ListPetByName(ctx context.Context, name string) ([]model.PetModel, error) {
 	res, err := pc.es.Search(
 		pc.es.Search.WithIndex("pets"),
 		pc.es.Search.WithQuery(fmt.Sprintf("name:%s", name)),
@@ -143,5 +143,15 @@ func (pc *PetClient) ListPetByName(ctx context.Context, name string) (*esapi.Res
 		return nil, errors.New(fmt.Sprintf("could not get document: %s", err))
 	}
 
-	return res, nil
+	queryRes, err := model.BodyToQueryByNameResponse(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	pmList := make([]model.PetModel, len(queryRes.Hits.Hits))
+	for i, hit := range queryRes.Hits.Hits {
+		pmList[i] = model.NewPetInstanceWithId(hit.Index, hit.Source.Name, hit.Source.Desc)
+	}
+
+	return pmList, nil
 }
