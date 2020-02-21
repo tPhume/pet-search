@@ -1,13 +1,19 @@
 package model
 
-import "errors"
+import (
+	"errors"
+)
 
 var (
 	errorEmptyId   = errors.New("id is empty")
 	errorEmptyName = errors.New("name is empty")
 )
 
+// PetModel is meant to simplify the response from Elasticsearch
+// Abstracts the details away from the user
+
 type PetModel interface {
+	SetId(string)
 	GetId() string
 	GetName() string
 	GetDesc() string
@@ -24,6 +30,10 @@ func NewPetInstance(name string, desc string) *PetInstance {
 		name: name,
 		desc: desc,
 	}
+}
+
+func (p *PetInstance) SetId(id string) {
+	p.id = id
 }
 
 func (p *PetInstance) GetId() string {
