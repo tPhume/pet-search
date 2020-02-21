@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"fmt"
 )
 
 var (
@@ -54,4 +55,8 @@ func (p *PetInstance) GetName() string {
 
 func (p *PetInstance) GetDesc() string {
 	return p.desc
+}
+
+func (p PetInstance) String() string {
+	return fmt.Sprintf("ID: %s\nName: %s\nDescription: %s", p.id, p.name, p.desc)
 }
