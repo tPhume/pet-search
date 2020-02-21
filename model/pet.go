@@ -17,3 +17,11 @@ type PetInstance struct {
 	Name string
 	Desc string
 }
+
+func (p *PetInstance) GetId() (string, error) {
+	if p.Id == "" {
+		return "", EMPTY_ID
+	}
+
+	return p.Id, nil
+}
