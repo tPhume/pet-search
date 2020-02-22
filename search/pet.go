@@ -19,6 +19,7 @@ type Pet interface {
 	UpdatePetByID(context.Context, model.PetModel) (*esapi.Response, error)
 	DeletePetByID(context.Context, string) (*esapi.Response, error)
 	ListPetByName(context.Context, string) ([]model.PetModel, error)
+	ListAllPet(context.Context) ([]model.PetModel, error)
 }
 
 type petRequest struct {
@@ -73,7 +74,7 @@ func (pc *PetClient) AddPet(ctx context.Context, pm model.PetModel) (model.PetMo
 		return nil, err
 	}
 
-	pm.SetId(indexRes.Index)
+	pm.SetId(indexRes.ID)
 	return pm, nil
 }
 
@@ -131,9 +132,9 @@ func (pc *PetClient) DeletePetByID(ctx context.Context, id string) (*esapi.Respo
 	return res, nil
 }
 
-func (pc *PetClient) ListPetByName(ctx context.Context, name string) (*esapi.Response, error) {
+func (pc *PetClient) ListPetByName(ctx context.Context, name string) ([]model.PetModel, error) {
 	res, err := pc.es.Search(
-		pc.es.Search.WithIndex("pets"),
+		pc.es.Search.WithIndex("pets/"),
 		pc.es.Search.WithQuery(fmt.Sprintf("name:%s", name)),
 		pc.es.Search.WithContext(ctx),
 		pc.es.Search.WithPretty(),
@@ -143,5 +144,39 @@ func (pc *PetClient) ListPetByName(ctx context.Context, name string) (*esapi.Res
 		return nil, errors.New(fmt.Sprintf("could not get document: %s", err))
 	}
 
-	return res, nil
+	queryRes, err := model.BodyToQueryByNameResponse(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	pmList := make([]model.PetModel, len(queryRes.Hits.Hits))
+	for i, hit := range queryRes.Hits.Hits {
+		pmList[i] = model.NewPetInstanceWithId(hit.ID, hit.Source.Name, hit.Source.Desc)
+	}
+
+	return pmList, nil
+}
+
+func (pc *PetClient) ListAllPet(ctx context.Context) ([]model.PetModel, error) {
+	res, err := pc.es.Search(
+		pc.es.Search.WithIndex("pets/"),
+		pc.es.Search.WithContext(ctx),
+		pc.es.Search.WithPretty(),
+	)
+
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("could not get document: %s", err))
+	}
+
+	queryRes, err := model.BodyToQueryByNameResponse(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	pmList := make([]model.PetModel, len(queryRes.Hits.Hits))
+	for i, hit := range queryRes.Hits.Hits {
+		pmList[i] = model.NewPetInstanceWithId(hit.ID, hit.Source.Name, hit.Source.Desc)
+	}
+
+	return pmList, nil
 }

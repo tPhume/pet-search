@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"fmt"
 )
 
 var (
@@ -32,6 +33,14 @@ func NewPetInstance(name string, desc string) *PetInstance {
 	}
 }
 
+func NewPetInstanceWithId(id string, name string, desc string) *PetInstance {
+	return &PetInstance{
+		id:   id,
+		name: name,
+		desc: desc,
+	}
+}
+
 func (p *PetInstance) SetId(id string) {
 	p.id = id
 }
@@ -46,4 +55,8 @@ func (p *PetInstance) GetName() string {
 
 func (p *PetInstance) GetDesc() string {
 	return p.desc
+}
+
+func (p PetInstance) String() string {
+	return fmt.Sprintf("ID: %s\nName: %s\nDescription: %s", p.id, p.name, p.desc)
 }
