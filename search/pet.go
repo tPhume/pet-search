@@ -17,7 +17,7 @@ type Pet interface {
 	CheckStatus() (*esapi.Response, error)
 	AddPet(context.Context, model.PetModel) (string, error)
 	SearchPetByID(context.Context, string) (model.PetModel, error)
-	UpdatePetByID(context.Context, model.PetModel) (*esapi.Response, error)
+	UpdatePetAll(context.Context, model.PetModel) error
 	DeletePetByID(context.Context, string) error
 	ListPetByName(context.Context, string) ([]model.PetModel, error)
 	ListAllPet(context.Context) ([]model.PetModel, error)
@@ -109,13 +109,15 @@ func (pc *PetClient) SearchPetByID(ctx context.Context, id string) (model.PetMod
 	return modelRes, nil
 }
 
-func (pc *PetClient) UpdatePetByID(ctx context.Context, pm model.PetModel) (*esapi.Response, error) {
-	bodyBytes, err := json.Marshal(petRequest{
-		Name: pm.GetName(),
-		Desc: pm.GetDesc(),
+func (pc *PetClient) UpdatePetAll(ctx context.Context, pm model.PetModel) error {
+	bodyBytes, err := json.Marshal(map[string]interface{}{
+		"doc": petRequest{
+			Name: pm.GetName(),
+			Desc: pm.GetDesc(),
+		},
 	})
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("could not index documents: %s", err))
+		return errors.New(fmt.Sprintf("could not index documents: %s", err))
 	}
 
 	req := esapi.UpdateRequest{
@@ -127,10 +129,14 @@ func (pc *PetClient) UpdatePetByID(ctx context.Context, pm model.PetModel) (*esa
 
 	res, err := req.Do(ctx, pc.es)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("could not update document: %s", err))
+		return errors.New(fmt.Sprintf("could not update document: %s", err))
 	}
 
-	return res, nil
+	if res.StatusCode != http.StatusOK {
+		return errors.New("could not update document")
+	}
+
+	return nil
 }
 
 func (pc *PetClient) DeletePetByID(ctx context.Context, id string) error {
