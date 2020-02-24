@@ -15,7 +15,7 @@ import (
 type Pet interface {
 	CheckStatus() (*esapi.Response, error)
 	AddPet(context.Context, model.PetModel) (model.PetModel, error)
-	SearchPetByID(context.Context, string) (*esapi.Response, error)
+	SearchPetByID(context.Context, string) (model.PetModel, error)
 	UpdatePetByID(context.Context, model.PetModel) (*esapi.Response, error)
 	DeletePetByID(context.Context, string) (*esapi.Response, error)
 	ListPetByName(context.Context, string) ([]model.PetModel, error)
@@ -78,7 +78,7 @@ func (pc *PetClient) AddPet(ctx context.Context, pm model.PetModel) (model.PetMo
 	return pm, nil
 }
 
-func (pc *PetClient) SearchPetByID(ctx context.Context, id string) (*esapi.Response, error) {
+func (pc *PetClient) SearchPetByID(ctx context.Context, id string) (model.PetModel, error) {
 	res, err := pc.es.Search(
 		pc.es.Search.WithIndex("pets"),
 		pc.es.Search.WithQuery(fmt.Sprintf("_id:%s", id)),
@@ -90,7 +90,19 @@ func (pc *PetClient) SearchPetByID(ctx context.Context, id string) (*esapi.Respo
 		return nil, errors.New(fmt.Sprintf("could not get document: %s", err))
 	}
 
-	return res, nil
+	queryRes, err := model.BodyToQueryResponse(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(queryRes.Hits.Hits) == 0 {
+		return nil, errors.New("no id matched")
+	}
+
+	rawRes := queryRes.Hits.Hits[0]
+	modelRes := model.NewPetInstanceWithId(rawRes.ID, rawRes.Source.Name, rawRes.Source.Desc)
+
+	return modelRes, nil
 }
 
 func (pc *PetClient) UpdatePetByID(ctx context.Context, pm model.PetModel) (*esapi.Response, error) {
@@ -144,7 +156,7 @@ func (pc *PetClient) ListPetByName(ctx context.Context, name string) ([]model.Pe
 		return nil, errors.New(fmt.Sprintf("could not get document: %s", err))
 	}
 
-	queryRes, err := model.BodyToQueryByNameResponse(res.Body)
+	queryRes, err := model.BodyToQueryResponse(res.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +180,7 @@ func (pc *PetClient) ListAllPet(ctx context.Context) ([]model.PetModel, error) {
 		return nil, errors.New(fmt.Sprintf("could not get document: %s", err))
 	}
 
-	queryRes, err := model.BodyToQueryByNameResponse(res.Body)
+	queryRes, err := model.BodyToQueryResponse(res.Body)
 	if err != nil {
 		return nil, err
 	}
