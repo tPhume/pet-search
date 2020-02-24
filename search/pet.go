@@ -15,7 +15,7 @@ import (
 
 type Pet interface {
 	CheckStatus() (*esapi.Response, error)
-	AddPet(context.Context, model.PetModel) (model.PetModel, error)
+	AddPet(context.Context, model.PetModel) (string, error)
 	SearchPetByID(context.Context, string) (model.PetModel, error)
 	UpdatePetByID(context.Context, model.PetModel) (*esapi.Response, error)
 	DeletePetByID(context.Context, string) error
@@ -46,7 +46,7 @@ func (pc *PetClient) CheckStatus() (*esapi.Response, error) {
 	return res, nil
 }
 
-func (pc *PetClient) AddPet(ctx context.Context, pm model.PetModel) (model.PetModel, error) {
+func (pc *PetClient) AddPet(ctx context.Context, pm model.PetModel) (string, error) {
 	id := uuid.New()
 
 	bodyBytes, err := json.Marshal(petRequest{
@@ -54,10 +54,10 @@ func (pc *PetClient) AddPet(ctx context.Context, pm model.PetModel) (model.PetMo
 		Desc: pm.GetDesc(),
 	})
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("could not marshal struct: %s", err))
+		return "", errors.New(fmt.Sprintf("could not marshal struct: %s", err))
 	}
 
-	req := esapi.IndexRequest{
+	req := esapi.CreateRequest{
 		Index:      "pets",
 		DocumentID: id.String(),
 		Body:       bytes.NewReader(bodyBytes),
@@ -67,16 +67,19 @@ func (pc *PetClient) AddPet(ctx context.Context, pm model.PetModel) (model.PetMo
 
 	res, err := req.Do(ctx, pc.es)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("could not index document: %s", err))
+		return "", errors.New(fmt.Sprintf("could not index document: %s", err))
+	}
+
+	if res.StatusCode != http.StatusCreated {
+		return "", errors.New("could not create new pet")
 	}
 
 	indexRes, err := model.BodyToIndexResponse(res.Body)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	pm.SetId(indexRes.ID)
-	return pm, nil
+	return indexRes.ID, nil
 }
 
 func (pc *PetClient) SearchPetByID(ctx context.Context, id string) (model.PetModel, error) {
