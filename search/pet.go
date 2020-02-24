@@ -23,8 +23,8 @@ type Pet interface {
 }
 
 type petRequest struct {
-	name string
-	desc string
+	Name string `json:"name"`
+	Desc string `json:"desc"`
 }
 
 // Concrete implementation
@@ -49,8 +49,8 @@ func (pc *PetClient) AddPet(ctx context.Context, pm model.PetModel) (model.PetMo
 	id := uuid.New()
 
 	bodyBytes, err := json.Marshal(petRequest{
-		name: pm.GetName(),
-		desc: pm.GetDesc(),
+		Name: pm.GetName(),
+		Desc: pm.GetDesc(),
 	})
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("could not marshal struct: %s", err))
@@ -95,8 +95,8 @@ func (pc *PetClient) SearchPetByID(ctx context.Context, id string) (*esapi.Respo
 
 func (pc *PetClient) UpdatePetByID(ctx context.Context, pm model.PetModel) (*esapi.Response, error) {
 	bodyBytes, err := json.Marshal(petRequest{
-		name: pm.GetName(),
-		desc: pm.GetDesc(),
+		Name: pm.GetName(),
+		Desc: pm.GetDesc(),
 	})
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("could not index documents: %s", err))
