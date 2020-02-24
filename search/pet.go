@@ -10,6 +10,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/google/uuid"
 	"github.com/tPhume/pet-search/model"
+	"net/http"
 )
 
 type Pet interface {
@@ -17,7 +18,7 @@ type Pet interface {
 	AddPet(context.Context, model.PetModel) (model.PetModel, error)
 	SearchPetByID(context.Context, string) (model.PetModel, error)
 	UpdatePetByID(context.Context, model.PetModel) (*esapi.Response, error)
-	DeletePetByID(context.Context, string) (*esapi.Response, error)
+	DeletePetByID(context.Context, string) error
 	ListPetByName(context.Context, string) ([]model.PetModel, error)
 	ListAllPet(context.Context) ([]model.PetModel, error)
 }
@@ -129,7 +130,7 @@ func (pc *PetClient) UpdatePetByID(ctx context.Context, pm model.PetModel) (*esa
 	return res, nil
 }
 
-func (pc *PetClient) DeletePetByID(ctx context.Context, id string) (*esapi.Response, error) {
+func (pc *PetClient) DeletePetByID(ctx context.Context, id string) error {
 	req := esapi.DeleteRequest{
 		Index:      "pets",
 		DocumentID: id,
@@ -138,10 +139,14 @@ func (pc *PetClient) DeletePetByID(ctx context.Context, id string) (*esapi.Respo
 
 	res, err := req.Do(ctx, pc.es)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("could not delete document: %s", err))
+		return errors.New(fmt.Sprintf("could not delete document: %s", err))
 	}
 
-	return res, nil
+	if res.StatusCode != http.StatusOK {
+		return errors.New("an error occurred")
+	}
+
+	return nil
 }
 
 func (pc *PetClient) ListPetByName(ctx context.Context, name string) ([]model.PetModel, error) {
