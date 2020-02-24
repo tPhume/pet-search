@@ -17,25 +17,10 @@ func main() {
 	petClient := search.NewPetClient(es)
 
 	// add pet
+	log.Println("---- ADDING PET ----")
 	res, err := petClient.AddPet(context.Background(), sushi)
 	failOnError(err, "")
 	log.Printf("\n%s\n", res)
-
-	// list pet = sushi
-	resList, err := petClient.ListPetByName(context.Background(), "sushi")
-	failOnError(err, "")
-
-	for _, r := range resList {
-		log.Printf("\n%s\n", r)
-	}
-
-	// list all pet
-	resList, err = petClient.ListAllPet(context.Background())
-	failOnError(err, "")
-
-	for _, r := range resList {
-		log.Printf("\n%s\n", r)
-	}
 }
 
 func failOnError(err error, msg string) {

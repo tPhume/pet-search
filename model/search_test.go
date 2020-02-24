@@ -68,9 +68,9 @@ func TestBodyToIndexResponse(t *testing.T) {
 	}
 }
 
-func TestBodyToQueryNameIDResponse(t *testing.T) {
+func TestBodyToQueryResponse(t *testing.T) {
 	body := ioutil.NopCloser(strings.NewReader(queryExample))
-	res, err := BodyToQueryByNameResponse(body)
+	res, err := BodyToQueryResponse(body)
 	if err != nil {
 		t.Fatal(err)
 	}

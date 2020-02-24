@@ -10,21 +10,22 @@ import (
 	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/google/uuid"
 	"github.com/tPhume/pet-search/model"
+	"net/http"
 )
 
 type Pet interface {
 	CheckStatus() (*esapi.Response, error)
-	AddPet(context.Context, model.PetModel) (model.PetModel, error)
-	SearchPetByID(context.Context, string) (*esapi.Response, error)
-	UpdatePetByID(context.Context, model.PetModel) (*esapi.Response, error)
-	DeletePetByID(context.Context, string) (*esapi.Response, error)
+	AddPet(context.Context, model.PetModel) (string, error)
+	SearchPetByID(context.Context, string) (model.PetModel, error)
+	UpdatePetAll(context.Context, model.PetModel) error
+	DeletePetByID(context.Context, string) error
 	ListPetByName(context.Context, string) ([]model.PetModel, error)
 	ListAllPet(context.Context) ([]model.PetModel, error)
 }
 
 type petRequest struct {
-	name string
-	desc string
+	Name string `json:"name"`
+	Desc string `json:"desc"`
 }
 
 // Concrete implementation
@@ -45,18 +46,18 @@ func (pc *PetClient) CheckStatus() (*esapi.Response, error) {
 	return res, nil
 }
 
-func (pc *PetClient) AddPet(ctx context.Context, pm model.PetModel) (model.PetModel, error) {
+func (pc *PetClient) AddPet(ctx context.Context, pm model.PetModel) (string, error) {
 	id := uuid.New()
 
 	bodyBytes, err := json.Marshal(petRequest{
-		name: pm.GetName(),
-		desc: pm.GetDesc(),
+		Name: pm.GetName(),
+		Desc: pm.GetDesc(),
 	})
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("could not marshal struct: %s", err))
+		return "", errors.New(fmt.Sprintf("could not marshal struct: %s", err))
 	}
 
-	req := esapi.IndexRequest{
+	req := esapi.CreateRequest{
 		Index:      "pets",
 		DocumentID: id.String(),
 		Body:       bytes.NewReader(bodyBytes),
@@ -66,19 +67,22 @@ func (pc *PetClient) AddPet(ctx context.Context, pm model.PetModel) (model.PetMo
 
 	res, err := req.Do(ctx, pc.es)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("could not index document: %s", err))
+		return "", errors.New(fmt.Sprintf("could not index document: %s", err))
+	}
+
+	if res.StatusCode != http.StatusCreated {
+		return "", errors.New("could not create new pet")
 	}
 
 	indexRes, err := model.BodyToIndexResponse(res.Body)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	pm.SetId(indexRes.ID)
-	return pm, nil
+	return indexRes.ID, nil
 }
 
-func (pc *PetClient) SearchPetByID(ctx context.Context, id string) (*esapi.Response, error) {
+func (pc *PetClient) SearchPetByID(ctx context.Context, id string) (model.PetModel, error) {
 	res, err := pc.es.Search(
 		pc.es.Search.WithIndex("pets"),
 		pc.es.Search.WithQuery(fmt.Sprintf("_id:%s", id)),
@@ -90,16 +94,30 @@ func (pc *PetClient) SearchPetByID(ctx context.Context, id string) (*esapi.Respo
 		return nil, errors.New(fmt.Sprintf("could not get document: %s", err))
 	}
 
-	return res, nil
+	queryRes, err := model.BodyToQueryResponse(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(queryRes.Hits.Hits) == 0 {
+		return nil, errors.New("no id matched")
+	}
+
+	rawRes := queryRes.Hits.Hits[0]
+	modelRes := model.NewPetInstanceWithId(rawRes.ID, rawRes.Source.Name, rawRes.Source.Desc)
+
+	return modelRes, nil
 }
 
-func (pc *PetClient) UpdatePetByID(ctx context.Context, pm model.PetModel) (*esapi.Response, error) {
-	bodyBytes, err := json.Marshal(petRequest{
-		name: pm.GetName(),
-		desc: pm.GetDesc(),
+func (pc *PetClient) UpdatePetAll(ctx context.Context, pm model.PetModel) error {
+	bodyBytes, err := json.Marshal(map[string]interface{}{
+		"doc": petRequest{
+			Name: pm.GetName(),
+			Desc: pm.GetDesc(),
+		},
 	})
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("could not index documents: %s", err))
+		return errors.New(fmt.Sprintf("could not index documents: %s", err))
 	}
 
 	req := esapi.UpdateRequest{
@@ -111,13 +129,17 @@ func (pc *PetClient) UpdatePetByID(ctx context.Context, pm model.PetModel) (*esa
 
 	res, err := req.Do(ctx, pc.es)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("could not update document: %s", err))
+		return errors.New(fmt.Sprintf("could not update document: %s", err))
 	}
 
-	return res, nil
+	if res.StatusCode != http.StatusOK {
+		return errors.New("could not update document")
+	}
+
+	return nil
 }
 
-func (pc *PetClient) DeletePetByID(ctx context.Context, id string) (*esapi.Response, error) {
+func (pc *PetClient) DeletePetByID(ctx context.Context, id string) error {
 	req := esapi.DeleteRequest{
 		Index:      "pets",
 		DocumentID: id,
@@ -126,10 +148,14 @@ func (pc *PetClient) DeletePetByID(ctx context.Context, id string) (*esapi.Respo
 
 	res, err := req.Do(ctx, pc.es)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("could not delete document: %s", err))
+		return errors.New(fmt.Sprintf("could not delete document: %s", err))
 	}
 
-	return res, nil
+	if res.StatusCode != http.StatusOK {
+		return errors.New("an error occurred")
+	}
+
+	return nil
 }
 
 func (pc *PetClient) ListPetByName(ctx context.Context, name string) ([]model.PetModel, error) {
@@ -144,7 +170,7 @@ func (pc *PetClient) ListPetByName(ctx context.Context, name string) ([]model.Pe
 		return nil, errors.New(fmt.Sprintf("could not get document: %s", err))
 	}
 
-	queryRes, err := model.BodyToQueryByNameResponse(res.Body)
+	queryRes, err := model.BodyToQueryResponse(res.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +194,7 @@ func (pc *PetClient) ListAllPet(ctx context.Context) ([]model.PetModel, error) {
 		return nil, errors.New(fmt.Sprintf("could not get document: %s", err))
 	}
 
-	queryRes, err := model.BodyToQueryByNameResponse(res.Body)
+	queryRes, err := model.BodyToQueryResponse(res.Body)
 	if err != nil {
 		return nil, err
 	}
