@@ -29,11 +29,9 @@ func RegisterPetRoutes(router *gin.Engine, search search.Pet) {
 
 	v1 := router.Group("/api/v1/pets")
 	v1.POST("", addPetHandler)
-	v1.GET("id/:id", searchPetByIdHandler)
-	v1.PUT("/:id", updatePetAllHandler)
-	v1.DELETE("/:id", deletePetByIdHandler)
-	v1.GET("name/:name", listPetByNameHandler)
-	v1.GET("", listAllPetHandler)
+	v1.PUT("", updatePetAllHandler)
+	v1.DELETE("", deletePetByIdHandler)
+	v1.GET("", muxGetHandler)
 }
 
 // returns handler with search passed into value
@@ -73,30 +71,6 @@ func addPetHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, gin.H{"id": id})
 }
 
-// handler to search by id
-func searchPetByIdHandler(ctx *gin.Context) {
-	temp, ok := ctx.Get("search")
-	if !ok {
-		ctx.Status(http.StatusInternalServerError)
-		return
-	}
-
-	s := temp.(search.Pet)
-	id := ctx.Param("id")
-
-	pm, err := s.SearchPetByID(ctx, id)
-	if err != nil {
-		ctx.Status(http.StatusBadRequest)
-		return
-	}
-
-	ctx.JSON(http.StatusOK, petResponse{
-		Id:   pm.GetId(),
-		Name: pm.GetName(),
-		Desc: pm.GetDesc(),
-	})
-}
-
 // handler to update pet (all field)
 func updatePetAllHandler(ctx *gin.Context) {
 	temp, ok := ctx.Get("search")
@@ -106,7 +80,7 @@ func updatePetAllHandler(ctx *gin.Context) {
 	}
 
 	s := temp.(search.Pet)
-	id := ctx.Param("id")
+	id := ctx.Query("id")
 
 	body := petRequest{}
 	err := ctx.ShouldBindJSON(&body)
@@ -139,7 +113,7 @@ func deletePetByIdHandler(ctx *gin.Context) {
 	}
 
 	s := temp.(search.Pet)
-	id := ctx.Param("id")
+	id := ctx.Query("id")
 
 	if err := s.DeletePetByID(ctx, id); err != nil {
 		ctx.Status(http.StatusBadRequest)
@@ -149,8 +123,8 @@ func deletePetByIdHandler(ctx *gin.Context) {
 	ctx.Status(http.StatusOK)
 }
 
-// handler to search by name
-func listPetByNameHandler(ctx *gin.Context) {
+// mux get handler
+func muxGetHandler(ctx *gin.Context) {
 	temp, ok := ctx.Get("search")
 	if !ok {
 		ctx.Status(http.StatusInternalServerError)
@@ -158,6 +132,41 @@ func listPetByNameHandler(ctx *gin.Context) {
 	}
 
 	s := temp.(search.Pet)
+
+	id := ctx.Query("id")
+	if id != "" {
+		searchPetByIdHandler(ctx, s)
+		return
+	}
+
+	name := ctx.Query("name")
+	if name != "" {
+		listPetByNameHandler(ctx, s)
+		return
+	}
+
+	listAllPetHandler(ctx, s)
+}
+
+// handler to search by id
+func searchPetByIdHandler(ctx *gin.Context, s search.Pet) {
+	id := ctx.Param("id")
+
+	pm, err := s.SearchPetByID(ctx, id)
+	if err != nil {
+		ctx.Status(http.StatusBadRequest)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, petResponse{
+		Id:   pm.GetId(),
+		Name: pm.GetName(),
+		Desc: pm.GetDesc(),
+	})
+}
+
+// handler to search by name
+func listPetByNameHandler(ctx *gin.Context, s search.Pet) {
 	name := ctx.Param("name")
 
 	pmList, err := s.ListPetByName(ctx, name)
@@ -178,14 +187,7 @@ func listPetByNameHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, resList)
 }
 
-func listAllPetHandler(ctx *gin.Context) {
-	temp, ok := ctx.Get("search")
-	if !ok {
-		ctx.Status(http.StatusInternalServerError)
-		return
-	}
-
-	s := temp.(search.Pet)
+func listAllPetHandler(ctx *gin.Context, s search.Pet) {
 	pmList, err := s.ListAllPet(ctx)
 	if err != nil {
 		ctx.Status(http.StatusBadRequest)
