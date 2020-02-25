@@ -19,6 +19,7 @@ func setUp() {
 }
 
 func TestHappyPathV1(t *testing.T) {
+	setUp()
 	RegisterPetRoutes(router, searchInstance)
 
 	// ---- Test Add Pet ----
