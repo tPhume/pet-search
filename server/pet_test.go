@@ -40,7 +40,7 @@ func TestHappyPathV1(t *testing.T) {
 
 	// ---- Test Search by id ----
 	w = httptest.NewRecorder()
-	req = httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/pets/id/%s", sushiInstance.GetId()), nil)
+	req = httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/pets?id=%s", sushiInstance.GetId()), nil)
 	router.ServeHTTP(w, req)
 
 	if w.Code != http.StatusOK {
@@ -56,7 +56,7 @@ func TestHappyPathV1(t *testing.T) {
 
 	// ---- Test Update Pet All ----
 	w = httptest.NewRecorder()
-	req = httptest.NewRequest(http.MethodPut, fmt.Sprintf("/api/v1/pets/%s", sushiInstance.GetId()), bytes.NewReader(jsonAdd))
+	req = httptest.NewRequest(http.MethodPut, fmt.Sprintf("/api/v1/pets?id=%s", sushiInstance.GetId()), bytes.NewReader(jsonAdd))
 	router.ServeHTTP(w, req)
 
 	if w.Code != http.StatusOK {
@@ -65,7 +65,7 @@ func TestHappyPathV1(t *testing.T) {
 
 	// ---- Test Delete Pet ----
 	w = httptest.NewRecorder()
-	req = httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/pets/%s", sushiInstance.GetId()), nil)
+	req = httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/pets?id=%s", sushiInstance.GetId()), nil)
 	router.ServeHTTP(w, req)
 
 	if w.Code != http.StatusOK {
@@ -74,7 +74,7 @@ func TestHappyPathV1(t *testing.T) {
 
 	// ---- Test List Pet by name ----
 	w = httptest.NewRecorder()
-	req = httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/pets/name/%s", sushiInstance.GetName()), nil)
+	req = httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/pets?name=%s", sushiInstance.GetName()), nil)
 	router.ServeHTTP(w, req)
 
 	if w.Code != http.StatusOK {
