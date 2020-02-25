@@ -126,7 +126,7 @@ func (p petSearchHappy) AddPet(ctx context.Context, pm model.PetModel) (string, 
 	return sushiInstance.GetId(), nil
 }
 
-func (p petSearchHappy) SearchPetById(ctx context.Context, id string) (model.PetModel, error) {
+func (p petSearchHappy) SearchPetByID(ctx context.Context, id string) (model.PetModel, error) {
 	return sushiInstance, nil
 }
 
@@ -134,7 +134,7 @@ func (p petSearchHappy) UpdatePetAll(ctx context.Context, pm model.PetModel) err
 	return nil
 }
 
-func (p petSearchHappy) DeletePetById(ctx context.Context, id string) error {
+func (p petSearchHappy) DeletePetByID(ctx context.Context, id string) error {
 	return nil
 }
 
@@ -142,7 +142,7 @@ func (p petSearchHappy) ListPetByName(ctx context.Context, name string) ([]model
 	return []model.PetModel{sushiInstance}, nil
 }
 
-func (p petSearchHappy) ListPetAll(ctx context.Context) ([]model.PetModel, error) {
+func (p petSearchHappy) ListAllPet(ctx context.Context) ([]model.PetModel, error) {
 	return []model.PetModel{sushiInstance}, nil
 }
 
