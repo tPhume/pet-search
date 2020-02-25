@@ -45,7 +45,7 @@ func NewPetInstance(name string, desc string) (*PetInstance, error) {
 	}, nil
 }
 
-func NewPetInstanceWithId(id string, name string, desc string) (*PetInstance,error) {
+func NewPetInstanceWithId(id string, name string, desc string) (*PetInstance, error) {
 	trimId := strings.TrimSpace(id)
 	err := checkId(trimId)
 	if err != nil {
