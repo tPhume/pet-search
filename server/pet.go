@@ -33,6 +33,7 @@ func RegisterPetRoutes(router *gin.Engine, search search.Pet) {
 	v1.PUT("/:id", updatePetAllHandler)
 	v1.DELETE("/:id", deletePetByIdHandler)
 	v1.GET("name/:name", listPetByNameHandler)
+	v1.GET("", listAllPetHandler)
 }
 
 // returns handler with search passed into value
@@ -160,6 +161,32 @@ func listPetByNameHandler(ctx *gin.Context) {
 	name := ctx.Param("name")
 
 	pmList, err := s.ListPetByName(ctx, name)
+	if err != nil {
+		ctx.Status(http.StatusBadRequest)
+		return
+	}
+
+	resList := petResponseList{Result: make([]*petResponse, len(pmList))}
+	for i, pm := range pmList {
+		resList.Result[i] = &petResponse{
+			Id:   pm.GetId(),
+			Name: pm.GetName(),
+			Desc: pm.GetDesc(),
+		}
+	}
+
+	ctx.JSON(http.StatusOK, resList)
+}
+
+func listAllPetHandler(ctx *gin.Context) {
+	temp, ok := ctx.Get("search")
+	if !ok {
+		ctx.Status(http.StatusInternalServerError)
+		return
+	}
+
+	s := temp.(search.Pet)
+	pmList, err := s.ListAllPet(ctx)
 	if err != nil {
 		ctx.Status(http.StatusBadRequest)
 		return
