@@ -14,7 +14,7 @@ import (
 )
 
 type Pet interface {
-	CheckStatus() (*esapi.Response, error)
+	CheckStatus() error
 	AddPet(context.Context, model.PetModel) (string, error)
 	SearchPetByID(context.Context, string) (model.PetModel, error)
 	UpdatePetAll(context.Context, model.PetModel) error
@@ -37,13 +37,13 @@ func NewPetClient(es *elasticsearch.Client) *PetClient {
 	return &PetClient{es: es}
 }
 
-func (pc *PetClient) CheckStatus() (*esapi.Response, error) {
-	res, err := pc.es.Info()
+func (pc *PetClient) CheckStatus() error {
+	_, err := pc.es.Info()
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("cluster returned error: %s", err))
+		return errors.New(fmt.Sprintf("cluster returned error: %s", err))
 	}
 
-	return res, nil
+	return nil
 }
 
 func (pc *PetClient) AddPet(ctx context.Context, pm model.PetModel) (string, error) {
