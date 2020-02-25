@@ -2,7 +2,7 @@ module github.com/tPhume/pet-search
 
 require (
 	github.com/elastic/go-elasticsearch/v7 v7.6.0
-	github.com/gin-gonic/gin v1.5.0 // indirect
+	github.com/gin-gonic/gin v1.5.0
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/golang/protobuf v1.3.3 // indirect
 	github.com/google/uuid v1.1.1
