@@ -29,6 +29,7 @@ func RegisterPetRoutes(router *gin.Engine, search search.Pet) {
 
 	v1 := router.Group("/api/v1/pets")
 	v1.POST("", addPetHandler)
+	v1.GET("/:id", searchPetByIdHandler)
 }
 
 // returns handler with search passed into value
@@ -66,4 +67,28 @@ func addPetHandler(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, gin.H{"id": id})
+}
+
+// handler to search by id
+func searchPetByIdHandler(ctx *gin.Context) {
+	temp, ok := ctx.Get("search")
+	if !ok {
+		ctx.JSON(http.StatusInternalServerError, nil)
+		return
+	}
+
+	s := temp.(search.Pet)
+	id := ctx.Param("id")
+
+	pm, err := s.SearchPetByID(ctx, id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, nil)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, petResponse{
+		Id:   pm.GetId(),
+		Name: pm.GetName(),
+		Desc: pm.GetDesc(),
+	})
 }
