@@ -49,7 +49,7 @@ func TestHappyPathV1(t *testing.T) {
 	res := petResponse{}
 	_ = json.Unmarshal(w.Body.Bytes(), &res)
 
-	if err := checkSushiRes(res); err != nil {
+	if err := checkSushiRes(&res); err != nil {
 		t.Fatal(err)
 	}
 
@@ -80,8 +80,9 @@ func TestHappyPathV1(t *testing.T) {
 		t.Fatalf("expected = [%v], got = [%v]", http.StatusOK, w.Code)
 	}
 
-	_ = json.Unmarshal(w.Body.Bytes(), &res)
-	if err = checkSushiRes(petResponse.pets[0]); err != nil {
+	resList := petResponseList{}
+	_ = json.Unmarshal(w.Body.Bytes(), &resList)
+	if err := checkSushiRes(resList.Result[0]); err != nil {
 		t.Fatal(err)
 	}
 
@@ -94,8 +95,8 @@ func TestHappyPathV1(t *testing.T) {
 		t.Fatalf("expected = [%v], got = [%v]", http.StatusOK, w.Code)
 	}
 
-	_ = json.Unmarshal(w.Body.Bytes(), &res)
-	if err = checkSushiRes(petResponse.pets[0]); err != nil {
+	_ = json.Unmarshal(w.Body.Bytes(), &resList)
+	if err := checkSushiRes(resList.Result[0]); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -147,7 +148,7 @@ func (p petSearchHappy) ListAllPet(ctx context.Context) ([]model.PetModel, error
 }
 
 // utilities function
-func checkSushiRes(res petResponse) error {
+func checkSushiRes(res *petResponse) error {
 	if res.Id != sushiInstance.GetId() {
 		return notSushiId
 	}
