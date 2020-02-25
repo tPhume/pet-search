@@ -14,7 +14,7 @@ import (
 )
 
 type Pet interface {
-	CheckStatus() (*esapi.Response, error)
+	CheckStatus() error
 	AddPet(context.Context, model.PetModel) (string, error)
 	SearchPetByID(context.Context, string) (model.PetModel, error)
 	UpdatePetAll(context.Context, model.PetModel) error
@@ -37,13 +37,13 @@ func NewPetClient(es *elasticsearch.Client) *PetClient {
 	return &PetClient{es: es}
 }
 
-func (pc *PetClient) CheckStatus() (*esapi.Response, error) {
-	res, err := pc.es.Info()
+func (pc *PetClient) CheckStatus() error {
+	_, err := pc.es.Info()
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("cluster returned error: %s", err))
+		return errors.New(fmt.Sprintf("cluster returned error: %s", err))
 	}
 
-	return res, nil
+	return nil
 }
 
 func (pc *PetClient) AddPet(ctx context.Context, pm model.PetModel) (string, error) {
@@ -104,7 +104,7 @@ func (pc *PetClient) SearchPetByID(ctx context.Context, id string) (model.PetMod
 	}
 
 	rawRes := queryRes.Hits.Hits[0]
-	modelRes := model.NewPetInstanceWithId(rawRes.ID, rawRes.Source.Name, rawRes.Source.Desc)
+	modelRes, _ := model.NewPetInstanceWithId(rawRes.ID, rawRes.Source.Name, rawRes.Source.Desc)
 
 	return modelRes, nil
 }
@@ -177,7 +177,7 @@ func (pc *PetClient) ListPetByName(ctx context.Context, name string) ([]model.Pe
 
 	pmList := make([]model.PetModel, len(queryRes.Hits.Hits))
 	for i, hit := range queryRes.Hits.Hits {
-		pmList[i] = model.NewPetInstanceWithId(hit.ID, hit.Source.Name, hit.Source.Desc)
+		pmList[i], _ = model.NewPetInstanceWithId(hit.ID, hit.Source.Name, hit.Source.Desc)
 	}
 
 	return pmList, nil
@@ -201,7 +201,7 @@ func (pc *PetClient) ListAllPet(ctx context.Context) ([]model.PetModel, error) {
 
 	pmList := make([]model.PetModel, len(queryRes.Hits.Hits))
 	for i, hit := range queryRes.Hits.Hits {
-		pmList[i] = model.NewPetInstanceWithId(hit.ID, hit.Source.Name, hit.Source.Desc)
+		pmList[i], _ = model.NewPetInstanceWithId(hit.ID, hit.Source.Name, hit.Source.Desc)
 	}
 
 	return pmList, nil
