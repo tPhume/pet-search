@@ -31,6 +31,7 @@ func RegisterPetRoutes(router *gin.Engine, search search.Pet) {
 	v1.POST("", addPetHandler)
 	v1.GET("/:id", searchPetByIdHandler)
 	v1.PUT("/:id", updatePetAllHandler)
+	v1.DELETE("/:id", deletePetByIdHandler)
 }
 
 // returns handler with search passed into value
@@ -120,6 +121,25 @@ func updatePetAllHandler(ctx *gin.Context) {
 
 	err = s.UpdatePetAll(ctx, pm)
 	if err != nil {
+		ctx.Status(http.StatusBadRequest)
+		return
+	}
+
+	ctx.Status(http.StatusOK)
+}
+
+// handler to delete pet by id
+func deletePetByIdHandler(ctx *gin.Context) {
+	temp, ok := ctx.Get("search")
+	if !ok {
+		ctx.Status(http.StatusInternalServerError)
+		return
+	}
+
+	s := temp.(search.Pet)
+	id := ctx.Param("id")
+
+	if err := s.DeletePetByID(ctx, id); err != nil {
 		ctx.Status(http.StatusBadRequest)
 		return
 	}
