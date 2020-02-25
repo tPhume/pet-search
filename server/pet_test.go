@@ -56,7 +56,7 @@ func TestHappyPathV1(t *testing.T) {
 
 	// ---- Test Update Pet All ----
 	w = httptest.NewRecorder()
-	req = httptest.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/pets/%s", sushiInstance.GetId()), bytes.NewReader(jsonAdd))
+	req = httptest.NewRequest(http.MethodPut, fmt.Sprintf("/api/v1/pets/%s", sushiInstance.GetId()), bytes.NewReader(jsonAdd))
 	router.ServeHTTP(w, req)
 
 	if w.Code != http.StatusOK {
