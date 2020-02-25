@@ -29,7 +29,7 @@ func RegisterPetRoutes(router *gin.Engine, search search.Pet) {
 
 	v1 := router.Group("/api/v1/pets")
 	v1.POST("", addPetHandler)
-	v1.GET("/:id", searchPetByIdHandler)
+	v1.GET("id/:id", searchPetByIdHandler)
 	v1.PUT("/:id", updatePetAllHandler)
 	v1.DELETE("/:id", deletePetByIdHandler)
 }
