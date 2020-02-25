@@ -17,9 +17,11 @@ var (
 // Abstracts the details away from the user
 
 type PetModel interface {
-	SetId(string)
+	SetId(string) error
 	GetId() string
+	SetName(string) error
 	GetName() string
+	SetDesc(string) error
 	GetDesc() string
 }
 
@@ -45,7 +47,7 @@ func NewPetInstance(name string, desc string) (*PetInstance, error) {
 	}, nil
 }
 
-func NewPetInstanceWithId(id string, name string, desc string) (*PetInstance,error) {
+func NewPetInstanceWithId(id string, name string, desc string) (*PetInstance, error) {
 	trimId := strings.TrimSpace(id)
 	err := checkId(trimId)
 	if err != nil {
@@ -67,16 +69,39 @@ func NewPetInstanceWithId(id string, name string, desc string) (*PetInstance,err
 	}, nil
 }
 
-func (p *PetInstance) SetId(id string) {
-	p.id = id
+func (p *PetInstance) SetId(id string) error {
+	trimId := strings.TrimSpace(id)
+	if err := checkId(trimId); err != nil {
+		return err
+	}
+
+
+	p.id = trimId
+	return nil
 }
 
 func (p *PetInstance) GetId() string {
 	return p.id
 }
 
+func (p *PetInstance) SetName(name string) error {
+	trimName := strings.TrimSpace(name)
+	if err := checkName(trimName); err != nil {
+		return err
+	}
+
+	p.name = trimName
+	return nil
+}
+
 func (p *PetInstance) GetName() string {
 	return p.name
+}
+
+func (p *PetInstance) SetDesc(desc string) error {
+	trimDesc := strings.TrimSpace(desc)
+	p.desc = trimDesc
+	return nil
 }
 
 func (p *PetInstance) GetDesc() string {
