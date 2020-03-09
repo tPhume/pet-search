@@ -29,9 +29,10 @@ func RegisterPetRoutes(router *gin.Engine, search search.Pet) {
 
 	v1 := router.Group("/api/v1/pets")
 	v1.POST("", addPetHandler)
-	v1.PUT("", updatePetAllHandler)
-	v1.DELETE("", deletePetByIdHandler)
+	v1.PUT("/:id", updatePetAllHandler)
+	v1.DELETE("/:id", deletePetByIdHandler)
 	v1.GET("", muxGetHandler)
+	v1.GET("/:id", searchPetByIdHandler)
 }
 
 // returns handler with search passed into value
@@ -80,7 +81,7 @@ func updatePetAllHandler(ctx *gin.Context) {
 	}
 
 	s := temp.(search.Pet)
-	id := ctx.Query("id")
+	id := ctx.Param("id")
 
 	body := petRequest{}
 	err := ctx.ShouldBindJSON(&body)
@@ -113,7 +114,7 @@ func deletePetByIdHandler(ctx *gin.Context) {
 	}
 
 	s := temp.(search.Pet)
-	id := ctx.Query("id")
+	id := ctx.Param("id")
 
 	if err := s.DeletePetByID(ctx, id); err != nil {
 		ctx.Status(http.StatusBadRequest)
@@ -133,15 +134,15 @@ func muxGetHandler(ctx *gin.Context) {
 
 	s := temp.(search.Pet)
 
-	id := ctx.Query("id")
-	if id != "" {
-		searchPetByIdHandler(ctx, s)
-		return
-	}
-
 	name := ctx.Query("name")
 	if name != "" {
 		listPetByNameHandler(ctx, s)
+		return
+	}
+
+	desc := ctx.Query("desc")
+	if desc != "" {
+		listPetByDescHandler(ctx, s)
 		return
 	}
 
@@ -149,7 +150,14 @@ func muxGetHandler(ctx *gin.Context) {
 }
 
 // handler to search by id
-func searchPetByIdHandler(ctx *gin.Context, s search.Pet) {
+func searchPetByIdHandler(ctx *gin.Context) {
+	temp, ok := ctx.Get("search")
+	if !ok {
+		ctx.Status(http.StatusInternalServerError)
+		return
+	}
+
+	s := temp.(search.Pet)
 	id := ctx.Param("id")
 
 	pm, err := s.SearchPetByID(ctx, id)
@@ -167,9 +175,31 @@ func searchPetByIdHandler(ctx *gin.Context, s search.Pet) {
 
 // handler to search by name
 func listPetByNameHandler(ctx *gin.Context, s search.Pet) {
-	name := ctx.Param("name")
+	name := ctx.Query("name")
 
 	pmList, err := s.ListPetByName(ctx, name)
+	if err != nil {
+		ctx.Status(http.StatusBadRequest)
+		return
+	}
+
+	resList := petResponseList{Result: make([]*petResponse, len(pmList))}
+	for i, pm := range pmList {
+		resList.Result[i] = &petResponse{
+			Id:   pm.GetId(),
+			Name: pm.GetName(),
+			Desc: pm.GetDesc(),
+		}
+	}
+
+	ctx.JSON(http.StatusOK, resList)
+}
+
+// handler to search by desc
+func listPetByDescHandler(ctx *gin.Context, s search.Pet) {
+	desc := ctx.Query("desc")
+
+	pmList, err := s.ListPetByDesc(ctx, desc)
 	if err != nil {
 		ctx.Status(http.StatusBadRequest)
 		return
