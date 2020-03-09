@@ -40,7 +40,7 @@ func TestHappyPathV1(t *testing.T) {
 
 	// ---- Test Search by id ----
 	w = httptest.NewRecorder()
-	req = httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/pets?id=%s", sushiInstance.GetId()), nil)
+	req = httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/pets/%s", sushiInstance.GetId()), nil)
 	router.ServeHTTP(w, req)
 
 	if w.Code != http.StatusOK {
@@ -56,7 +56,7 @@ func TestHappyPathV1(t *testing.T) {
 
 	// ---- Test Update Pet All ----
 	w = httptest.NewRecorder()
-	req = httptest.NewRequest(http.MethodPut, fmt.Sprintf("/api/v1/pets?id=%s", sushiInstance.GetId()), bytes.NewReader(jsonAdd))
+	req = httptest.NewRequest(http.MethodPut, fmt.Sprintf("/api/v1/pets/%s", sushiInstance.GetId()), bytes.NewReader(jsonAdd))
 	router.ServeHTTP(w, req)
 
 	if w.Code != http.StatusOK {
@@ -65,7 +65,7 @@ func TestHappyPathV1(t *testing.T) {
 
 	// ---- Test Delete Pet ----
 	w = httptest.NewRecorder()
-	req = httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/pets?id=%s", sushiInstance.GetId()), nil)
+	req = httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/pets/%s", sushiInstance.GetId()), nil)
 	router.ServeHTTP(w, req)
 
 	if w.Code != http.StatusOK {
@@ -92,6 +92,18 @@ func TestHappyPathV1(t *testing.T) {
 	req = httptest.NewRequest(http.MethodGet, "/api/v1/pets", nil)
 	router.ServeHTTP(w, req)
 
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected = [%v], got = [%v]", http.StatusOK, w.Code)
+	}
+
+	_ = json.Unmarshal(w.Body.Bytes(), &resList)
+	if err := checkSushiRes(resList.Result[0]); err != nil {
+		t.Fatal(err)
+	}
+
+	// ---- Test List Desc ----
+	w = httptest.NewRecorder()
+	req = httptest.NewRequest(http.MethodGet, "/api/v1/pets?desc=good+boy", nil)
 	if w.Code != http.StatusOK {
 		t.Fatalf("expected = [%v], got = [%v]", http.StatusOK, w.Code)
 	}
@@ -145,6 +157,10 @@ func (p petSearchHappy) ListPetByName(ctx context.Context, name string) ([]model
 }
 
 func (p petSearchHappy) ListAllPet(ctx context.Context) ([]model.PetModel, error) {
+	return []model.PetModel{sushiInstance}, nil
+}
+
+func (p petSearchHappy) ListPetByDesc(ctx context.Context, desc string) ([]model.PetModel, error) {
 	return []model.PetModel{sushiInstance}, nil
 }
 

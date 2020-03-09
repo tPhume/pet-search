@@ -21,6 +21,7 @@ type Pet interface {
 	DeletePetByID(context.Context, string) error
 	ListPetByName(context.Context, string) ([]model.PetModel, error)
 	ListAllPet(context.Context) ([]model.PetModel, error)
+	ListPetByDesc(context.Context, string) ([]model.PetModel, error)
 }
 
 type petRequest struct {
@@ -192,6 +193,45 @@ func (pc *PetClient) ListAllPet(ctx context.Context) ([]model.PetModel, error) {
 
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("could not get document: %s", err))
+	}
+
+	queryRes, err := model.BodyToQueryResponse(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	pmList := make([]model.PetModel, len(queryRes.Hits.Hits))
+	for i, hit := range queryRes.Hits.Hits {
+		pmList[i], _ = model.NewPetInstanceWithId(hit.ID, hit.Source.Name, hit.Source.Desc)
+	}
+
+	return pmList, nil
+}
+
+func (pc *PetClient) ListPetByDesc(ctx context.Context, desc string) ([]model.PetModel, error) {
+	var buf bytes.Buffer
+
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"match_phrase": map[string]interface{}{
+				"desc": desc,
+			},
+		},
+	}
+
+	if err := json.NewEncoder(&buf).Encode(query); err != nil {
+		return nil, err
+	}
+
+	res, err := pc.es.Search(
+		pc.es.Search.WithIndex("pets/"),
+		pc.es.Search.WithBody(&buf),
+		pc.es.Search.WithContext(ctx),
+		pc.es.Search.WithPretty(),
+	)
+
+	if err != nil {
+		return nil, err
 	}
 
 	queryRes, err := model.BodyToQueryResponse(res.Body)
