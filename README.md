@@ -7,3 +7,4 @@
 * Add error types and validators to search package - then add more detailed error to rest server endpoints
 * Write the rest server documentation
 * Containerized the application
+* Split desc attribute to smaller more specific attribute - at this point this is just a kv pair with inverted index.
