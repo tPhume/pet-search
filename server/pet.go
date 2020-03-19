@@ -62,19 +62,19 @@ func addPetHandler(ctx *gin.Context) {
 	r := temp.(rabbit.Pet)
 	body := petRequest{}
 	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.Status(http.StatusBadRequest)
+		ctx.String(http.StatusBadRequest, "invalid request format")
 		return
 	}
 
 	pm, err := model.NewPetInstance(body.Name, body.Desc)
 	if err != nil {
-		ctx.Status(http.StatusBadRequest)
+		ctx.String(http.StatusBadRequest, "invalid value")
 		return
 	}
 
 	err = r.AddPet(ctx, pm)
 	if err != nil {
-		ctx.Status(http.StatusBadRequest)
+		ctx.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -95,13 +95,13 @@ func updatePetAllHandler(ctx *gin.Context) {
 	body := petRequest{}
 	err := ctx.ShouldBindJSON(&body)
 	if err != nil {
-		ctx.Status(http.StatusBadRequest)
+		ctx.String(http.StatusBadRequest, "invalid request format")
 		return
 	}
 
 	pm, err := model.NewPetInstanceWithId(id, body.Name, body.Desc)
 	if err != nil {
-		ctx.Status(http.StatusBadRequest)
+		ctx.String(http.StatusBadRequest, "invalid value")
 		return
 	}
 
