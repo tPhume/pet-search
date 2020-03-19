@@ -27,15 +27,8 @@ func TestHappyPathV1(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/pets", bytes.NewReader(jsonAdd))
 	router.ServeHTTP(w, req)
 
-	if w.Code != http.StatusCreated {
-		t.Fatalf("expected = [%v], got = [%v]", http.StatusCreated, w.Code)
-	}
-
-	temp := make(map[string]interface{})
-	_ = json.Unmarshal(w.Body.Bytes(), &temp)
-
-	if temp["id"] != sushiInstance.GetId() {
-		t.Fatalf("expected = [%s], got = [%s]", sushiInstance.GetId(), temp["id"])
+	if w.Code != http.StatusAccepted {
+		t.Fatalf("expected = [%v], got = [%v]", http.StatusAccepted, w.Code)
 	}
 
 	// ---- Test Search by id ----
@@ -59,8 +52,8 @@ func TestHappyPathV1(t *testing.T) {
 	req = httptest.NewRequest(http.MethodPut, fmt.Sprintf("/api/v1/pets/%s", sushiInstance.GetId()), bytes.NewReader(jsonAdd))
 	router.ServeHTTP(w, req)
 
-	if w.Code != http.StatusOK {
-		t.Fatalf("expected = [%v], got = [%v]", http.StatusOK, w.Code)
+	if w.Code != http.StatusAccepted {
+		t.Fatalf("expected = [%v], got = [%v]", http.StatusAccepted, w.Code)
 	}
 
 	// ---- Test Delete Pet ----
@@ -68,8 +61,8 @@ func TestHappyPathV1(t *testing.T) {
 	req = httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/pets/%s", sushiInstance.GetId()), nil)
 	router.ServeHTTP(w, req)
 
-	if w.Code != http.StatusOK {
-		t.Fatalf("expected = [%v], got = [%v]", http.StatusOK, w.Code)
+	if w.Code != http.StatusAccepted {
+		t.Fatalf("expected = [%v], got = [%v]", http.StatusAccepted, w.Code)
 	}
 
 	// ---- Test List Pet by name ----
