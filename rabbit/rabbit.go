@@ -1,16 +1,15 @@
 package rabbit
 
 import (
-	"bytes"
 	"context"
-	"encoding/gob"
+	"encoding/json"
 	"github.com/streadway/amqp"
 	"github.com/tPhume/pet-search/model"
 )
 
 // operations that async must support
 type Pet interface {
-	AddPet(context.Context, model.PetModel) error
+	AddPet(context.Context, model.PetInstance) error
 }
 
 // Concrete implementation
@@ -18,22 +17,20 @@ type PetClient struct {
 	Channel *amqp.Channel
 }
 
-func (pc *PetClient) AddPet(ctx context.Context, petModel model.PetModel) error {
-	var body bytes.Buffer
-	enc := gob.NewEncoder(&body)
-
-	if err := enc.Encode(petModel); err != nil {
+func (pc *PetClient) AddPet(ctx context.Context, petModel model.PetInstance) error {
+	body, err := json.Marshal(petModel)
+	if err != nil {
 		return err
 	}
 
-	if err := pc.Channel.Publish(
+	if err = pc.Channel.Publish(
 		"pet",
 		"pet.add",
 		false,
 		false,
 		amqp.Publishing{
-			Type: "gob",
-			Body: body.Bytes(),
+			Type: "json",
+			Body: body,
 		},
 	); err != nil {
 		return err

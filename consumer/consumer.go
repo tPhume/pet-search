@@ -1,9 +1,8 @@
 package consumer
 
 import (
-	"bytes"
 	"context"
-	"encoding/gob"
+	"encoding/json"
 	"github.com/streadway/amqp"
 	"github.com/tPhume/pet-search/model"
 	"github.com/tPhume/pet-search/search"
@@ -53,25 +52,25 @@ func ConsumePet(search search.Pet) {
 	)
 	failOnError("could not start consumer", err)
 
+	var id string
+
 	for d := range msgs {
 		err = nil
 
-		body := model.PetInstance{}
+		body := &model.PetInstance{}
 
-		dec := gob.NewDecoder(bytes.NewReader(d.Body))
-		err = dec.Decode(&body)
-
+		err = json.Unmarshal(d.Body, body)
 		if err != nil {
 			_ = d.Nack(false, true)
 		} else {
-			_, err = search.AddPet(context.Background(), &body)
+			id, err = search.AddPet(context.Background(), body)
 			if err != nil {
 				_ = d.Nack(false, true)
 			}
 		}
 
 		_ = d.Ack(false)
-		log.Printf("Pet: %s added with ID: %s\n", body.GetName(), body.GetId())
+		log.Printf("Pet: %s added with ID: %s\n", body.GetName(), id)
 	}
 }
 

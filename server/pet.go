@@ -72,7 +72,7 @@ func addPetHandler(ctx *gin.Context) {
 		return
 	}
 
-	err = r.AddPet(ctx, pm)
+	err = r.AddPet(ctx, *pm)
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, err.Error())
 		return
