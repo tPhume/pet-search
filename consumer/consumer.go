@@ -12,7 +12,7 @@ import (
 
 // simple consumer that will consume and run AddPet
 func ConsumePet(search search.Pet) {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:9200")
+	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672")
 	failOnError("fail to connect to rabbitmq", err)
 
 	ch, err := conn.Channel()
@@ -69,8 +69,9 @@ func ConsumePet(search search.Pet) {
 				_ = d.Nack(false, true)
 			}
 		}
-
+		
 		_ = d.Ack(false)
+		log.Printf("Pet: %s added with ID: %s\n", body.GetName(), body.GetId())
 	}
 }
 
