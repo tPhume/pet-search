@@ -3,6 +3,7 @@ package server
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/tPhume/pet-search/model"
+	"github.com/tPhume/pet-search/rabbit"
 	"github.com/tPhume/pet-search/search"
 	"net/http"
 )
@@ -24,8 +25,9 @@ type petRequest struct {
 	Desc string `json:"desc"`
 }
 
-func RegisterPetRoutes(router *gin.Engine, search search.Pet) {
+func RegisterPetRoutes(router *gin.Engine, search search.Pet, rabbit rabbit.Pet) {
 	router.Use(setSearch(search))
+	router.Use(setRabbit(rabbit))
 
 	v1 := router.Group("/api/v1/pets")
 	v1.POST("", addPetHandler)
@@ -42,15 +44,22 @@ func setSearch(search search.Pet) gin.HandlerFunc {
 	}
 }
 
+// returns handler with rabbit passed into value
+func setRabbit(rabbit rabbit.Pet) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Set("rabbit", rabbit)
+	}
+}
+
 // handler to add pet
 func addPetHandler(ctx *gin.Context) {
-	temp, ok := ctx.Get("search")
+	temp, ok := ctx.Get("rabbit")
 	if !ok {
 		ctx.Status(http.StatusInternalServerError)
 		return
 	}
 
-	s := temp.(search.Pet)
+	r := temp.(rabbit.Pet)
 	body := petRequest{}
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
@@ -63,13 +72,13 @@ func addPetHandler(ctx *gin.Context) {
 		return
 	}
 
-	id, err := s.AddPet(ctx, pm)
+	err = r.AddPet(ctx, pm)
 	if err != nil {
 		ctx.Status(http.StatusBadRequest)
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, gin.H{"id": id})
+	ctx.Status(http.StatusAccepted)
 }
 
 // handler to update pet (all field)
