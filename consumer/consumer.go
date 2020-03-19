@@ -1,16 +1,16 @@
-package main
+package consumer
 
 import (
-	"github.com/elastic/go-elasticsearch/v7"
-	"github.com/gin-gonic/gin"
+	"context"
+	"encoding/json"
 	"github.com/streadway/amqp"
-	"github.com/tPhume/pet-search/rabbit"
+	"github.com/tPhume/pet-search/model"
 	"github.com/tPhume/pet-search/search"
-	"github.com/tPhume/pet-search/server"
 	"log"
 )
 
-func main() {
+// simple consumer that will consume and run AddPet
+func ConsumePet(search search.Pet) {
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672")
 	failOnError("fail to connect to rabbitmq", err)
 
@@ -41,14 +41,37 @@ func main() {
 	err = ch.QueueBind(queue.Name, "pet.add", "pet", false, nil)
 	failOnError("fail to bind queue", err)
 
-	router := gin.Default()
-	es, err := elasticsearch.NewDefaultClient()
-	if err != nil {
-		log.Fatal(err)
-	}
+	msgs, err := ch.Consume(
+		queue.Name,
+		"consume add pet",
+		false,
+		false,
+		false,
+		false,
+		nil,
+	)
+	failOnError("could not start consumer", err)
 
-	server.RegisterPetRoutes(router, search.NewPetClient(es), &rabbit.PetClient{Channel: ch})
-	log.Fatal(router.Run("0.0.0.0:8080"))
+	var id string
+
+	for d := range msgs {
+		err = nil
+
+		body := &model.PetInstance{}
+
+		err = json.Unmarshal(d.Body, body)
+		if err != nil {
+			_ = d.Nack(false, true)
+		} else {
+			id, err = search.AddPet(context.Background(), body)
+			if err != nil {
+				_ = d.Nack(false, true)
+			}
+		}
+
+		_ = d.Ack(false)
+		log.Printf("Pet: %s added with ID: %s\n", body.GetName(), id)
+	}
 }
 
 func failOnError(msg string, err error) {
