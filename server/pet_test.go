@@ -61,8 +61,8 @@ func TestHappyPathV1(t *testing.T) {
 	req = httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/pets/%s", sushiInstance.GetId()), nil)
 	router.ServeHTTP(w, req)
 
-	if w.Code != http.StatusAccepted {
-		t.Fatalf("expected = [%v], got = [%v]", http.StatusAccepted, w.Code)
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected = [%v], got = [%v]", http.StatusOK, w.Code)
 	}
 
 	// ---- Test List Pet by name ----
