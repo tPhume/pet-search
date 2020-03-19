@@ -15,7 +15,7 @@ type Pet interface {
 
 // Concrete implementation
 type PetClient struct {
-	channel *amqp.Channel
+	Channel *amqp.Channel
 }
 
 func (pc *PetClient) AddPet(ctx context.Context, petModel model.PetModel) error {
@@ -26,7 +26,7 @@ func (pc *PetClient) AddPet(ctx context.Context, petModel model.PetModel) error 
 		return err
 	}
 
-	if err := pc.channel.Publish(
+	if err := pc.Channel.Publish(
 		"pet",
 		"pet.add",
 		false,

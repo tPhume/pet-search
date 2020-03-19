@@ -47,7 +47,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	server.RegisterPetRoutes(router, search.NewPetClient(es), &rabbit.PetClient{ch})
+	server.RegisterPetRoutes(router, search.NewPetClient(es), &rabbit.PetClient{Channel: ch})
 	log.Fatal(router.Run("0.0.0.0:8080"))
 }
 

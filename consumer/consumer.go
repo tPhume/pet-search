@@ -69,7 +69,7 @@ func ConsumePet(search search.Pet) {
 				_ = d.Nack(false, true)
 			}
 		}
-		
+
 		_ = d.Ack(false)
 		log.Printf("Pet: %s added with ID: %s\n", body.GetName(), body.GetId())
 	}
