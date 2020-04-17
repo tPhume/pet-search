@@ -13,10 +13,6 @@ services:
       memlock:
         soft: -1
         hard: -1
-    volumes:
-      - type: bind
-        source: ./volume/es01
-        target: /usr/share/elasticsearch/data
     ports:
       - '9200:9200'
   rabbit:

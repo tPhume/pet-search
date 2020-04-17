@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672")
+	conn, err := amqp.Dial("amqp://guest:guest@rabbit:5672")
 	failOnError("fail to connect to rabbitmq", err)
 
 	ch, err := conn.Channel()
