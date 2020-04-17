@@ -42,7 +42,9 @@ func main() {
 	failOnError("fail to bind queue", err)
 
 	router := gin.Default()
-	es, err := elasticsearch.NewDefaultClient()
+	es, err := elasticsearch.NewClient(elasticsearch.Config{
+		Addresses: []string{"http://es01:9200"},
+	})
 	if err != nil {
 		log.Fatal(err)
 	}

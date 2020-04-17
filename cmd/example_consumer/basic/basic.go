@@ -8,7 +8,9 @@ import (
 )
 
 func main() {
-	es, err := elasticsearch.NewDefaultClient()
+	es, err := elasticsearch.NewClient(elasticsearch.Config{
+		Addresses: []string{"http://es01:9200"},
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
