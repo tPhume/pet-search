@@ -34,5 +34,7 @@ services:
     ports:
       - "80:8080"
   pet-consumer:
-    build: consumer.Dockerfile
+    build:
+      context: .
+      dockerfile: consumer.Dockerfile
     container_name: pet-consumer
