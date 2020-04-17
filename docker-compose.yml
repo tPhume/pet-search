@@ -19,7 +19,6 @@ services:
         target: /usr/share/elasticsearch/data
     ports:
       - '9200:9200'
-
   rabbit:
     image: 'rabbitmq:3.8.3'
     container_name: rabbit
@@ -29,3 +28,11 @@ services:
         target: /var/lib/rabbitmq
     ports:
       - '5672:5672'
+  pet-search:
+    build: .
+    container_name: pet-search
+    ports:
+      - "80:8080"
+  pet-consumer:
+    build: consumer.Dockerfile
+    container_name: pet-consumer
