@@ -28,13 +28,3 @@ services:
         target: /var/lib/rabbitmq
     ports:
       - '5672:5672'
-  pet-search:
-    build: .
-    container_name: pet-search
-    ports:
-      - "80:8080"
-  pet-consumer:
-    build:
-      context: .
-      dockerfile: consumer.Dockerfile
-    container_name: pet-consumer
