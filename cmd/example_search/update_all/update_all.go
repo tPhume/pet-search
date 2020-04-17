@@ -14,7 +14,7 @@ func main() {
 	failOnError(err, "could not connect to elasticsearch")
 
 	// create pet and client
-	sushi := model.NewPetInstanceWithId(os.Args[1], os.Args[2], os.Args[3])
+	sushi, _ := model.NewPetInstanceWithId(os.Args[1], os.Args[2], os.Args[3])
 	petClient := search.NewPetClient(es)
 
 	// add pet

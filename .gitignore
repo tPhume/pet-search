@@ -24,10 +24,6 @@
 /volume/es01/*
 !volume/es01/.keep
 
-!/volume/es02/
-/volume/es02/*
-!volume/es02/.keep
-
-!/volume/es03/
-/volume/es03/*
-!volume/es03/.keep
+!/volume/rabbit/
+/volume/rabbit/*
+!volume/rabbit/,keep

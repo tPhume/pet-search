@@ -26,9 +26,9 @@ type PetModel interface {
 }
 
 type PetInstance struct {
-	id   string
-	name string
-	desc string
+	Id   string
+	Name string
+	Desc string
 }
 
 // trims space of name and desc
@@ -42,8 +42,8 @@ func NewPetInstance(name string, desc string) (*PetInstance, error) {
 	trimDesc := strings.TrimSpace(desc)
 
 	return &PetInstance{
-		name: trimName,
-		desc: trimDesc,
+		Name: trimName,
+		Desc: trimDesc,
 	}, nil
 }
 
@@ -63,9 +63,9 @@ func NewPetInstanceWithId(id string, name string, desc string) (*PetInstance, er
 	trimDesc := strings.TrimSpace(desc)
 
 	return &PetInstance{
-		id:   id,
-		name: trimName,
-		desc: trimDesc,
+		Id:   id,
+		Name: trimName,
+		Desc: trimDesc,
 	}, nil
 }
 
@@ -76,12 +76,12 @@ func (p *PetInstance) SetId(id string) error {
 	}
 
 
-	p.id = trimId
+	p.Id = trimId
 	return nil
 }
 
 func (p *PetInstance) GetId() string {
-	return p.id
+	return p.Id
 }
 
 func (p *PetInstance) SetName(name string) error {
@@ -90,26 +90,26 @@ func (p *PetInstance) SetName(name string) error {
 		return err
 	}
 
-	p.name = trimName
+	p.Name = trimName
 	return nil
 }
 
 func (p *PetInstance) GetName() string {
-	return p.name
+	return p.Name
 }
 
 func (p *PetInstance) SetDesc(desc string) error {
 	trimDesc := strings.TrimSpace(desc)
-	p.desc = trimDesc
+	p.Desc = trimDesc
 	return nil
 }
 
 func (p *PetInstance) GetDesc() string {
-	return p.desc
+	return p.Desc
 }
 
 func (p PetInstance) String() string {
-	return fmt.Sprintf("ID: %s\nName: %s\nDescription: %s", p.id, p.name, p.desc)
+	return fmt.Sprintf("ID: %s\nName: %s\nDescription: %s", p.Id, p.Name, p.Desc)
 }
 
 func checkName(name string) error {

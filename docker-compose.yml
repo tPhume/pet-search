@@ -6,9 +6,7 @@ services:
     container_name: es01
     environment:
       node.name: es01
-      cluster.name: es-cluster-docker
-      discovery.seed_hosts: 'es02,es03'
-      cluster.initial_master_nodes: 'es01,es02,es03'
+      discovery.type: single-node
       bootstrap.memory_lock: 'true'
       ES_JAVA_OPTS: '-Xms512m -Xmx512m'
     ulimits:
@@ -21,52 +19,20 @@ services:
         target: /usr/share/elasticsearch/data
     ports:
       - '9200:9200'
-    networks:
-      - elastic
-  es02:
-    image: 'docker.elastic.co/elasticsearch/elasticsearch:7.6.0'
-    container_name: es02
-    environment:
-      node.name: es02
-      cluster.name: es-cluster-docker
-      discovery.seed_hosts: 'es01,es03'
-      cluster.initial_master_nodes: 'es01,es02,es03'
-      bootstrap.memory_lock: 'true'
-      ES_JAVA_OPTS: '-Xms512m -Xmx512m'
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
+  rabbit:
+    image: 'rabbitmq:3.8.3'
+    container_name: rabbit
     volumes:
       - type: bind
-        source: ./volume/es02
-        target: /usr/share/elasticsearch/data
-    logging:
-      driver: none
-    networks:
-      - elastic
-  es03:
-    image: 'docker.elastic.co/elasticsearch/elasticsearch:7.6.0'
-    container_name: es03
-    environment:
-      node.name: es03
-      cluster.name: es-cluster-docker
-      discovery.seed_hosts: 'es01,es02'
-      cluster.initial_master_nodes: 'es01,es02,es03'
-      bootstrap.memory_lock: 'true'
-      ES_JAVA_OPTS: '-Xms512m -Xmx512m'
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - type: bind
-        source: ./volume/es03
-        target: /usr/share/elasticsearch/data
-    logging:
-      driver: none
-    networks:
-      - elastic
-networks:
-  elastic:
-    driver: bridge
+        source: ./volume/rabbit
+        target: /var/lib/rabbitmq
+    ports:
+      - '5672:5672'
+  pet-search:
+    build: .
+    container_name: pet-search
+    ports:
+      - "80:8080"
+  pet-consumer:
+    build: consumer.Dockerfile
+    container_name: pet-consumer

@@ -20,22 +20,15 @@ func setUp() {
 
 func TestHappyPathV1(t *testing.T) {
 	setUp()
-	RegisterPetRoutes(router, searchInstance)
+	RegisterPetRoutes(router, searchInstance, rabbitInstance)
 
 	// ---- Test Add Pet ----
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/pets", bytes.NewReader(jsonAdd))
 	router.ServeHTTP(w, req)
 
-	if w.Code != http.StatusCreated {
-		t.Fatalf("expected = [%v], got = [%v]", http.StatusCreated, w.Code)
-	}
-
-	temp := make(map[string]interface{})
-	_ = json.Unmarshal(w.Body.Bytes(), &temp)
-
-	if temp["id"] != sushiInstance.GetId() {
-		t.Fatalf("expected = [%s], got = [%s]", sushiInstance.GetId(), temp["id"])
+	if w.Code != http.StatusAccepted {
+		t.Fatalf("expected = [%v], got = [%v]", http.StatusAccepted, w.Code)
 	}
 
 	// ---- Test Search by id ----
@@ -59,7 +52,7 @@ func TestHappyPathV1(t *testing.T) {
 	req = httptest.NewRequest(http.MethodPut, fmt.Sprintf("/api/v1/pets/%s", sushiInstance.GetId()), bytes.NewReader(jsonAdd))
 	router.ServeHTTP(w, req)
 
-	if w.Code != http.StatusOK {
+	if w.Code != http.StatusOK{
 		t.Fatalf("expected = [%v], got = [%v]", http.StatusOK, w.Code)
 	}
 
@@ -118,6 +111,8 @@ func TestHappyPathV1(t *testing.T) {
 var (
 	router *gin.Engine
 
+	rabbitInstance = petRabbitHappy{}
+
 	searchInstance   = petSearchHappy{}
 	sushiInstance, _ = model.NewPetInstanceWithId("1", "Sushi", "Sushi is a good boy")
 
@@ -130,6 +125,12 @@ var (
 )
 
 // Is used for testing the happy path
+type petRabbitHappy struct{}
+
+func (p petRabbitHappy) AddPet(ctx context.Context, pm model.PetModel) error {
+	return nil
+}
+
 type petSearchHappy struct{}
 
 func (p petSearchHappy) CheckStatus() error {
